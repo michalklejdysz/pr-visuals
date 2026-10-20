@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: skills are discoverable
+        run: |
+          out=$(npx --yes skills add . --list)
+          for s in pr-screenshots pr-demo-video; do echo "$out" | grep -q "$s" || { echo "skills CLI does not see $s"; exit 1; }; done
+      - name: js syntax
+        run: for f in skills/*/*.js hero/*.js; do node --check "$f"; done
+      - name: shellcheck
+        run: shellcheck hero/*.sh
